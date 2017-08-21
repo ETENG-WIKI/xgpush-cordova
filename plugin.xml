@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <plugin xmlns:android="http://schemas.android.com/apk/res/android"
   id="cordova-plugin-xgpush"
-  version="0.2.0">
+  version="0.3.0">
 
   <name>xgpush-cordova</name>
   <description>Tencent XGPush Plugin</description>
@@ -42,7 +42,6 @@
       <uses-permission android:name="android.permission.READ_PHONE_STATE" />
       <uses-permission android:name="android.permission.ACCESS_WIFI_STATE" />
       <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
-      <uses-permission android:name="android.permission.WRITE_SETTINGS" />
       <uses-permission android:name="android.permission.WAKE_LOCK" />
       <uses-permission android:name="android.permission.VIBRATE" />
       <!-- 【常用】 信鸽SDK所需权限 -->
@@ -66,7 +65,7 @@
 
       <!-- 【必须】 信鸽receiver广播接收 -->
       <receiver android:name="com.tencent.android.tpush.XGPushReceiver"
-        android:process=":xg_service_v2" >
+        android:process=":xg_service_v3" >
         <intent-filter android:priority="0x7fffffff" >
           <!-- 【必须】 信鸽SDK的内部广播 -->
           <action android:name="com.tencent.android.tpush.action.SDK" />
@@ -100,27 +99,52 @@
         android:theme="@android:style/Theme.Translucent"
         android:exported="false" >
         <intent-filter>
-          <!-- 若使用AndroidStudio，请设置android:name="android.intent.action"-->
-          <action android:name="android.intent.action" />
-        </intent-filter>
+          <!-- 若使用AndroidStudio，请设置android:name="android.intent.action"
+          <action android:name="android.intent.action" />-->
+		   <!-- 接收消息透传 --> 
+		   <action android:name="com.tencent.android.tpush.action.PUSH_MESSAGE" /> 
+		   <!-- 监听注册、反注册、设置/删除标签、通知被点击等处理结果 --> 
+		   <action android:name="com.tencent.android.tpush.action.FEEDBACK" />
+           </intent-filter>
       </activity>
 
       <!-- 【必须】 信鸽service -->
-      <service android:name="com.tencent.android.tpush.service.XGPushService"
+      <service android:name="com.tencent.android.tpush.service.XGPushServiceV3"
         android:exported="true"
         android:persistent="true"
-        android:process=":xg_service_v2">
+        android:process=":xg_service_v3">
       </service>
 
-      <!-- 【必须】 通知service，此选项有助于提高抵达率 -->
+      <!-- 【必须】 通知service，此选项有助于提高抵达率 
       <service android:name="com.tencent.android.tpush.rpc.XGRemoteService"
         android:exported="true" >
         <intent-filter>
           <action android:name="$PACKAGE_NAME.PUSH_ACTION" />
         </intent-filter>
-      </service>
-
-      <!-- 【必须】 请将YOUR_ACCESS_ID修改为APP的AccessId，“21”开头的10位数字，中间没空格 -->
+      </service>-->
+	  <!-- 【必须】 【注意】authorities修改为 包名.AUTH_XGPUSH, 如demo的包名为：com.qq.xgdemo-->
+       <provider
+           android:name="com.tencent.android.tpush.XGPushProvider"
+           android:authorities="$PACKAGE_NAME.AUTH_XGPUSH"
+           android:exported="true"
+           />       
+    	<!-- 【必须】 【注意】authorities修改为 包名.TPUSH_PROVIDER, 如demo的包名为：com.qq.xgdemo-->
+       <provider
+           android:name="com.tencent.android.tpush.SettingsContentProvider"
+           android:authorities="$PACKAGE_NAME.TPUSH_PROVIDER"
+           android:exported="false" />
+		   
+	 <!-- 【必须】增强 xg_service 存活率 -->
+	 <service
+		android:name="com.tencent.android.tpush.service.XGDaemonService" android:process=":xg_service_v3" />
+	 <!-- 【必须】 【注意】authorities修改为 包名.TENCENT.MID.V3, 如demo的包名为：com.qq.xgdemo-->
+       <provider
+           android:name="com.tencent.mid.api.MidProvider"
+           android:authorities="$PACKAGE_NAME.TENCENT.MID.V3"
+           android:exported="true" >
+       </provider>
+	  
+	 <!-- 【必须】 请将YOUR_ACCESS_ID修改为APP的AccessId，“21”开头的10位数字，中间没空格 -->
       <meta-data android:name="XG_V2_ACCESS_ID"
         android:value="$ACCESS_ID">
       </meta-data>
@@ -140,8 +164,9 @@
     <!-- Tencent XGPush SDK -->
     <source-file src="sdk/android/libs/android-support-v4.jar" target-dir="libs" />
     <source-file src="sdk/android/libs/jg_filter_sdk_1.1.jar" target-dir="libs" />
-    <source-file src="sdk/android/libs/Xg_sdk_v2.47_20161026_0936.jar" target-dir="libs" />
+    <source-file src="sdk/android/libs/Xg_sdk_v3.1_20170417_0946.jar" target-dir="libs" />
     <source-file src="sdk/android/libs/wup-1.0.0.E-SNAPSHOT.jar" target-dir="libs" />
+	  <source-file src="sdk/android/libs/mid-core-sdk-3.7.2.jar" target-dir="libs" />
 
     <!-- device related static library, you may need other platform so -->
     <source-file src="sdk/android/libs/armeabi/libtpnsSecurity.so" target-dir="libs/armeabi" />
